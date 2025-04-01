@@ -1,15 +1,12 @@
 import psutil
-import pandas as pd
 from rich.table import Table
 from rich.console import Console
 
 def get_cpu_data():
 
-    # Get usage for each logical core over 1 second
-    usage_per_core = psutil.cpu_percent(interval=1, percpu=True)
+    usage_per_core = psutil.cpu_percent(interval=None, percpu=True)
 
-    # Get total CPU usage over 1 second
-    total_usage = psutil.cpu_percent(interval=1)
+    total_usage = psutil.cpu_percent(interval=None)
 
     # Get current, min, and max CPU frequency
     freq = psutil.cpu_freq()

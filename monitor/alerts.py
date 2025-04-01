@@ -41,18 +41,7 @@ def check_bottlenecks(console: Console):
 
     disk_usages = {p["mountpoint"]: p["percent"] for p in disk_data["partitions"]}
 
-    # Network bottleneck (basic threshold for high activity)
-    rate_data = network.get_network_rate()
-    sent_rate = rate_data["sent_per_sec"]
-    recv_rate = rate_data["recv_per_sec"]
-
-    if recv_rate > rate_threshold or sent_rate > rate_threshold:
-        alerts.append(f"🌐 [bold red]High Network bandwidth:[/bold red] Send {sent_rate / 1e6:.2f} MB/s, Recv {recv_rate / 1e6:.2f} MB/s")
-
-    net_summary = {
-    "sent": sent_rate,
-    "recv": recv_rate
-    }
+    
 
     # Output
     if alerts:
@@ -61,9 +50,9 @@ def check_bottlenecks(console: Console):
         console.print(Panel.fit("✅ All systems within normal limits", title="System Status", style="green"))
 
     # Summary chart
-    print_usage_summary(console, cpu_usage, mem_usage, disk_usages, net_summary)
+    print_usage_summary(console, cpu_usage, mem_usage, disk_usages)
 
-def print_usage_summary(console, cpu_usage, mem_usage, disk_usages, net_summary):
+def print_usage_summary(console, cpu_usage, mem_usage, disk_usages):
     table = Table(title="Component Usage Summary")
     table.add_column("Component", style="cyan")
     table.add_column("Usage", justify="right", style="magenta")
@@ -72,9 +61,6 @@ def print_usage_summary(console, cpu_usage, mem_usage, disk_usages, net_summary)
     table.add_row("Memory", f"{mem_usage:.1f}%")
     for part, usage in disk_usages.items():
         table.add_row(f"Disk {part}", f"{usage:.1f}%")
-
-    table.add_row("Net Sent", f"{net_summary['sent'] / 1e6:.1f} MB")
-    table.add_row("Net Recv", f"{net_summary['recv'] / 1e6:.1f} MB")
 
     console.print(table)
 

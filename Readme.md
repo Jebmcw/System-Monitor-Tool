@@ -107,5 +107,25 @@ Enable time-series storage to review long-term performance and resource patterns
 Minimal UX impact—users can enable/disable monitoring via the system tray with one click.
 
 
+## 🆕 Performance Helper Features (Planned)
 
+🔍 **High-Usage Process Finder**  
+Detects and displays the top processes using CPU and memory to help the user identify what can be safely closed.
 
+🚫 **Startup Load Analyzer**  
+Lists programs configured to start on system boot, allowing users to manually disable unwanted bloatware.
+
+🌐 **Network Drain Detector**  
+Identifies apps or processes with the highest network activity to help pinpoint background data hogs.
+
+🧩 **Idle Resource Report**  
+Flags apps consuming significant resources even when the user is idle—useful for catching memory leaks or runaway processes.
+
+🔋 **Power Efficiency Warning (Laptop only)**  
+Detects high system load while on battery and suggests switching to power-saver mode to preserve energy.
+
+📉 **FPS Tracking and Logging**  
+Integrate frame rate monitoring using tools like PresentMon to track FPS and help users identify GPU/CPU limitations.
+
+🎞️ **Post-Process AI Frame Interpolation (RIFE)**  
+Offer an optional tool to smooth recorded gameplay by generating interpolated frames using AI (offline).
