@@ -1,4 +1,5 @@
 import psutil
+import pandas as pd
 from rich.table import Table
 from rich.console import Console
 
@@ -26,6 +27,7 @@ def get_cpu_data():
             "max": freq.max if freq else None
         }
     }
+
 
 def print_cpu_usage(console: Console):
     # Fetch the CPU data dictionary
