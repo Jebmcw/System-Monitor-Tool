@@ -1,60 +1,65 @@
-import threading
-import time
-import psutil
-import tkinter as tk
-from tkinter import ttk
+import os
+import sys
+import customtkinter as ctk
 
-class LiveCPUTracker:
-    def __init__(self, callback):
-        self.callback = callback  # Function to update GUI
-        self.running = False
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from monitor import cpu  # assumes get_cpu_data() is defined in monitor/cpu.py
 
-    def start(self):
-        self.running = True
-        threading.Thread(target=self._run, daemon=True).start()
-
-    def stop(self):
-        self.running = False
-
-    def _run(self):
-        psutil.cpu_percent(interval=None)  # Prime counters
-        while self.running:
-            usage_per_core = psutil.cpu_percent(interval=1.0, percpu=True)
-            total_usage = sum(usage_per_core) / len(usage_per_core)
-            freq = psutil.cpu_freq()
-            data = {
-                "usage_per_core": usage_per_core,
-                "total_usage": total_usage,
-                "freq": freq.current if freq else None,
-            }
-            self.callback(data)  # Let GUI update safely
-
-class LiveCPUTable(ttk.Frame):
+class LiveCPUTable(ctk.CTkFrame):
     def __init__(self, parent):
-        super().__init__(parent)
-        self.tree = ttk.Treeview(self, columns=("Core", "Usage"), show="headings", height=10)
-        self.tree.heading("Core", text="Core")
-        self.tree.heading("Usage", text="Usage (%)")
-        self.tree.pack(expand=True, fill="both")
-        self.cpu_tracker = LiveCPUTracker(self.schedule_update)
-        self.cpu_tracker.start()
+        super().__init__(parent, corner_radius=10)
 
-    def schedule_update(self, data):
-        self.after(0, lambda: self.update_table(data))  # Schedule safely on main thread
+        self.configure(fg_color="#1e1e1e")  # Dark background
+
+        # Title label
+        self.title = ctk.CTkLabel(self, text="CPU Usage Monitor", font=ctk.CTkFont("Segoe UI", 20, "bold"))
+        self.title.pack(pady=(15, 10))
+
+        # Container for CPU rows
+        self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="#2b2b2b", corner_radius=8)
+        self.scroll_frame.pack(padx=15, pady=10, fill="both", expand=True)
+
+        self.labels = []
+
+        # Start polling
+        self.poll_interval_ms = 1000
+        self.poll_cpu()
+
+    def poll_cpu(self):
+        data = cpu.get_cpu_data()
+        self.update_table(data)
+        self.after(self.poll_interval_ms, self.poll_cpu)
 
     def update_table(self, data):
-        self.tree.delete(*self.tree.get_children())
+        # Clear existing labels
+        for widget in self.scroll_frame.winfo_children():
+            widget.destroy()
+
+        # Per-core usage
         for i, usage in enumerate(data["usage_per_core"]):
-            self.tree.insert("", "end", values=(f"Core {i}", f"{usage:.1f}%"))
-        self.tree.insert("", "end", values=("Total", f"{data['total_usage']:.1f}%"))
-        self.tree.insert("", "end", values=("Freq", f"{data['freq']:.1f} MHz"))
+            row = ctk.CTkLabel(self.scroll_frame, text=f"Core {i:<2}  |  {usage:.1f}%", 
+                               font=ctk.CTkFont("Consolas", 14), text_color="cyan")
+            row.pack(anchor="w", padx=10, pady=2)
+
+        # Total usage
+        total_label = ctk.CTkLabel(self.scroll_frame, text=f"Total     |  {data['total_usage']:.1f}%", 
+                                   font=ctk.CTkFont("Consolas", 14, "bold"), text_color="magenta")
+        total_label.pack(anchor="w", padx=10, pady=(8, 2))
+
+        # Frequency
+        freq_label = ctk.CTkLabel(self.scroll_frame, text=f"Freq      |  {data['freq']['current']:.1f} MHz", 
+                                  font=ctk.CTkFont("Consolas", 14), text_color="magenta")
+        freq_label.pack(anchor="w", padx=10, pady=(0, 10))
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    root.geometry("300x400")
-    root.title("CPU Monitor")
+    ctk.set_appearance_mode("dark")  # "light" or "dark"
+    ctk.set_default_color_theme("blue")
 
-    cpu_widget = LiveCPUTable(root)
-    cpu_widget.pack(expand=True, fill="both")
+    app = ctk.CTk()
+    app.title("System Monitor Tool")
+    app.geometry("400x650")
 
-    root.mainloop()
+    cpu_widget = LiveCPUTable(app)
+    cpu_widget.pack(fill="both", expand=True, padx=10, pady=10)
+
+    app.mainloop()

@@ -21,7 +21,7 @@ class SystemMonitorApp(tk.Tk):
         title = ttk.Label(self, text="System Monitor", font=("Segoe UI", 16))
         title.pack(pady=10)
 
-        chart_frame = cpu_tables.LiveCPUChart(self)
+        chart_frame = cpu_tables.LiveCPUTable(self)
         chart_frame.pack(pady=10)
 
 if __name__ == "__main__":

@@ -1,17 +1,13 @@
 import psutil
-from rich.table import Table
 from rich.console import Console
 
 def get_cpu_data():
+    # Prime psutil to avoid 0.0% readings on first call
+    psutil.cpu_percent(interval=None)
 
     usage_per_core = psutil.cpu_percent(interval=None, percpu=True)
-
-    total_usage = psutil.cpu_percent(interval=None)
-
-    # Get current, min, and max CPU frequency
+    total_usage = sum(usage_per_core) / len(usage_per_core)  # average
     freq = psutil.cpu_freq()
-
-    # Get total number of logical CPU cores
     core_count = psutil.cpu_count(logical=True)
 
     return {
@@ -25,27 +21,6 @@ def get_cpu_data():
         }
     }
 
-
 def print_cpu_usage(console: Console):
-    # Fetch the CPU data dictionary
-    data = get_cpu_data()
-
-    # Create a rich table to display CPU usage
-    table = Table(title="CPU Usage")
-
-    # Add table columns for core number and usage %
-    table.add_column("Core", justify="right", style="cyan", no_wrap=True)
-    table.add_column("Usage (%)", justify="right", style="magenta")
-
-    # Add rows for each core's usage
-    for i, percent in enumerate(data["usage_per_core"]):
-        table.add_row(f"Core {i}", f"{percent:.1f}%")
-
-    # Add total CPU usage
-    table.add_row("Total", f"{data['total_usage']:.1f}%")
-
-    # Add current CPU frequency
-    table.add_row("Freq", f"{data['freq']['current']} MHz")
-
-    # Print the table to the console
-    console.print(table)
+    _ = get_cpu_data()
+    console.print("[green]CPU data successfully grabbed.[/green]")
